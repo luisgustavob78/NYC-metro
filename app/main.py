@@ -3,6 +3,7 @@ import numpy as np
 import joblib
 from fastapi import FastAPI, File, UploadFile
 import json
+from xgboost import XGBRegressor
 
 
 app = FastAPI(title="NYC metro usage prediction! Upload your json batch")
