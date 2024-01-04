@@ -11,23 +11,13 @@ from io import StringIO
 import json
 
 
-app = FastAPI(title="Credit card default prediction! Upload your json batch")
-
-# # Represents a batch of wines
-# class Credit(BaseModel):
-#     batches: List[conlist(item_type=float, min_items=24, max_items=24)]
-
-# @app.post("/upload_json/")
-# async def upload_json(file: UploadFile = File(...)):
-#     global json_file
-#     contents = await file.read()
-#     json_file = contents.decode("utf-8")
+app = FastAPI(title="NYC metro usage prediction! Upload your json batch")
 
 @app.on_event("startup")
-def load_clf():
+def load_model():
     # Load classifier from pickle file
-    global clf
-    clf = joblib.load("model.pkl")
+    global model
+    model = joblib.load("NYC_metro_model.pkl")
 
 @app.get("/")
 def home():
@@ -44,29 +34,7 @@ async def predict(file: UploadFile = File(...)):
     json_data = json.loads(contents)
 
     np_batches = np.array(json_data["batches"], dtype=float)
-
-    names = pd.read_csv("col_names.csv")
-    col_names = names["col_names"].values
-    df_batch = pd.DataFrame(np_batches)
-    df_batch.columns = col_names
-
-    cat_cols = ['SEX', 'EDUCATION', 'MARRIAGE', 'PAY_0', 'PAY_2', 'PAY_3', 'PAY_4', 'PAY_5', 'PAY_6']
-
-    def negative_cat(value):
-        if value < 0:
-            value = value*(-15)
-        
-        else:
-            pass
     
-        return value
-
-    for c in cat_cols:
-        df_batch[c] = df_batch[c].apply(negative_cat)
+    y_pred = model.predict(np_batches)
     
-    probs = clf.predict_proba(df_batch)
-    probs = [p[1] for p in probs]
-    thr = 0.55
-    pred = ["default" if v > thr else "good payment" for v in probs]
-    
-    return {"Prediction": pred}
+    return {"Prediction": y_pred}
