@@ -1,12 +1,7 @@
 import pickle
 import numpy as np
-import pandas as pd
 import joblib
-from typing import List
 from fastapi import FastAPI, File, UploadFile
-from pydantic import BaseModel, conlist
-import csv
-from io import StringIO
 import json
 
 
@@ -20,7 +15,7 @@ def load_model():
 
 @app.get("/")
 def home():
-    return "Congratulations! Your API is working as expected. This new version allows for batching. Now head over to http://localhost:81/docs"
+    return "Congratulations! Your API is working as expected. This new version allows for batching. Now head over to http://localhost:8000/docs"
 
 
 @app.post("/predict")
