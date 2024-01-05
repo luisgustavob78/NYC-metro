@@ -1,12 +1,13 @@
 import pickle
 import numpy as np
+import pandas as pd
 import joblib
-from fastapi import FastAPI, File, UploadFile
+from fastapi import FastAPI, File, UploadFile, HTTPException
 import json
 from xgboost import XGBRegressor
 
 
-app = FastAPI(title="NYC metro usage prediction! Upload your json batch")
+app = FastAPI(title="NYC metro usage prediction! Upload your csv batch")
 
 @app.on_event("startup")
 def load_model():
@@ -22,14 +23,14 @@ def home():
 @app.post("/predict")
 async def predict(file: UploadFile = File(...)):
 
-    contents = await file.read()
-    contents = contents.decode("utf-8")
+    #loading csv data
+    df = pd.read_csv(file.file)
 
-    # Parse JSON content
-    json_data = json.loads(contents)
+    #converting dataframe to array
+    X = list(df.values)
 
-    np_batches = np.array(json_data["batches"], dtype=float)
+    #generating predictions and converting it to the requested format
+    y_pred = list(model.predict(X))
+    y_pred = [str(value) for value in y_pred]
     
-    y_pred = model.predict(np_batches)
-    
-    return {"Prediction": y_pred}
+    return {"Predictions": y_pred}
